@@ -627,12 +627,12 @@ const CONFIG = {
       return !msg;
     };
     const validate = i => {
-      if (i === 0) return setError('firstname', !field('firstname').value.trim());
+      if (i === 0) return setError('name', !field('name').value.trim());
       if (i === 1) return setError('business', !field('business').value.trim());
       if (i === 3) return setError('email', !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(field('email').value.trim()));
       return true;
     };
-    const firstName = () => field('firstname').value.trim();
+    const firstName = () => field('name').value.trim().split(/\s+/)[0] || '';
 
     const show = (i, dir = 1) => {
       at = i;
@@ -653,7 +653,7 @@ const CONFIG = {
     const compose = () => {
       const ends = $$('input[name="ends"]:checked', form).map(c => c.value);
       const lines = [
-        `Name: ${[field('firstname').value, field('lastname').value].map(v => v.trim()).filter(Boolean).join(' ')}`,
+        `Name: ${field('name').value.trim()}`,
         `Business: ${field('business').value.trim()}`,
         `Loose ends: ${ends.length ? ends.join('; ') : 'none picked'}`,
         field('notes').value.trim() ? `Notes: ${field('notes').value.trim()}` : null,
@@ -668,11 +668,12 @@ const CONFIG = {
     // site's curly ones are normalised before sending.
     const buildHubspotFields = () => {
       const val = n => field(n).value.trim();
+      const parts = val('name').split(/\s+/);
       const ends = $$('input[name="ends"]:checked', form)
         .map(c => c.value.replace(/[‘’]/g, "'"));
       const map = [
-        ['firstname', val('firstname')],
-        ['lastname', val('lastname')],
+        ['firstname', parts[0]],
+        ['lastname', parts.slice(1).join(' ')],
         ['company', val('business')],
         ['loose_ends_cb', ends.join(';')],
         ['loose_ends_other', val('notes')],
@@ -771,7 +772,7 @@ const CONFIG = {
     // clear an error as soon as it's fixed
     form.addEventListener('input', e => {
       const n = e.target.name;
-      if (e.target.getAttribute('aria-invalid') === 'true') validate(['firstname', 'business', '', 'email'].indexOf(n));
+      if (e.target.getAttribute('aria-invalid') === 'true') validate(['name', 'business', '', 'email'].indexOf(n));
     });
     copy.addEventListener('click', async () => {
       const label = copy.textContent;
