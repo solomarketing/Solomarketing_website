@@ -7,6 +7,12 @@ const CONFIG = {
   // While empty, the final step offers "Copy message" and shows an owner note.
   email: 'solomarketing.ut@gmail.com',
   subject: 'New conversation from the SOLO website',
+  // HubSpot form submission (Forms API). "Send it" posts here first; if it
+  // fails, the button falls back to the mailto link above.
+  hubspot: {
+    portalId: '246548239',
+    formId: '2a76de61-c2cb-469c-8afc-a9ff9dbebb79',
+  },
 };
 
 (() => {
@@ -657,8 +663,74 @@ const CONFIG = {
       return lines.join('\n');
     };
 
+    // Map the answers onto HubSpot contact properties and post them to the
+    // Forms API. Option values in HubSpot use straight apostrophes, so the
+    // site's curly ones are normalised before sending.
+    const buildHubspotFields = () => {
+      const val = n => field(n).value.trim();
+      const parts = val('name').split(/\s+/);
+      const ends = $$('input[name="ends"]:checked', form)
+        .map(c => c.value.replace(/[‘’]/g, "'"));
+      const map = [
+        ['firstname', parts[0]],
+        ['lastname', parts.slice(1).join(' ')],
+        ['company', val('business')],
+        ['loose_ends_cb', ends.join(';')],
+        ['loose_ends_other', val('notes')],
+        ['email', val('email')],
+        ['phone', val('phone')],
+      ];
+      return map.filter(([, v]) => v).map(([name, value]) => ({ objectTypeId: '0-1', name, value }));
+    };
+    const sendToHubspot = async () => {
+      const { portalId, formId } = CONFIG.hubspot;
+      const res = await fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: buildHubspotFields(),
+          context: { pageUri: location.href, pageName: document.title },
+        }),
+      });
+      if (!res.ok) throw new Error(`HubSpot responded ${res.status}`);
+    };
+    let sending = false, sent = false;
+    const sendLabel = mail.innerHTML;
+    const errEl = document.createElement('p');
+    errEl.className = 'field__error';
+    errEl.hidden = true;
+    errEl.textContent = 'That didn’t go through. Please use the email button instead, or copy the message.';
+    $('.chat__send', form).after(errEl);
+    mail.addEventListener('click', async e => {
+      if (!CONFIG.hubspot) return;            // no HubSpot: plain mailto link
+      if (sent || sending) { e.preventDefault(); return; }
+      if (mail.dataset.fallback === 'true') return; // HubSpot failed once: let mailto open
+      e.preventDefault();
+      sending = true;
+      mail.setAttribute('aria-disabled', 'true');
+      mail.firstElementChild.textContent = 'Sending...';
+      try {
+        await sendToHubspot();
+        sent = true;
+        mail.firstElementChild.textContent = 'Sent. Thank you.';
+        status.textContent = 'Message sent. We’ll be in touch soon.';
+        copy.hidden = true;
+      } catch (err) {
+        mail.dataset.fallback = 'true';
+        errEl.hidden = false;
+        mail.removeAttribute('aria-disabled');
+        mail.innerHTML = sendLabel;
+        mail.firstElementChild.firstChild.textContent = 'Send by email instead ';
+        status.textContent = 'That didn’t go through. Use the email button instead, or copy the message.';
+      } finally {
+        sending = false;
+      }
+    });
+
     const finish = () => {
       const text = compose();
+      sent = false; delete mail.dataset.fallback; errEl.hidden = true; copy.hidden = false;
+      mail.removeAttribute('aria-disabled'); mail.innerHTML = sendLabel;
       summaryEl.textContent = text;
       stepsEl.forEach(s => s.classList.remove('is-current'));
       dots.forEach(d => d.classList.add('is-on'));
