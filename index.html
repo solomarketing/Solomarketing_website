@@ -452,10 +452,14 @@
           <fieldset class="chat__step" data-step-i="1">
             <legend class="chat__q"><span class="chat__qn">1 of 4</span> First things first... what should we call you?</legend>
             <label class="field">
-              <span class="field__label">Your name</span>
-              <input type="text" name="name" autocomplete="name" required maxlength="80">
+              <span class="field__label">First name</span>
+              <input type="text" name="firstname" autocomplete="given-name" required maxlength="80">
             </label>
-            <p class="field__error" data-error-for="name" hidden>We’ll need something to call you, first name is fine.</p>
+            <p class="field__error" data-error-for="firstname" hidden>We’ll need something to call you, first name is fine.</p>
+            <label class="field">
+              <span class="field__label">Last name <span class="chat__opt">Optional</span></span>
+              <input type="text" name="lastname" autocomplete="family-name" maxlength="80">
+            </label>
           </fieldset>
 
           <fieldset class="chat__step" data-step-i="2">
@@ -475,8 +479,7 @@
               <label class="pick"><input type="checkbox" name="ends" value="Our CRM isn't helping"><span>Our CRM isn’t helping</span></label>
               <label class="pick"><input type="checkbox" name="ends" value="Can't tell what's working"><span>Can’t tell what’s working</span></label>
               <label class="pick"><input type="checkbox" name="ends" value="Processes live in people's heads"><span>Processes live in people’s heads</span></label>
-              <label class="pick"><input type="checkbox" name="ends" value="Too many tools"><span>Too many tools</span></label>
-              <label class="pick"><input type="checkbox" name="ends" value="Nothing connected"><span>Nothing connected</span></label>
+              <label class="pick"><input type="checkbox" name="ends" value="Too many tools, Nothing connected"><span>Too many tools, nothing connected</span></label>
             </div>
             <label class="field field--area">
               <span class="field__label">Anything else? <span class="chat__opt">Optional</span></span>
