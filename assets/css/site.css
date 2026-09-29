@@ -718,6 +718,9 @@ html:not(.js) .chat__rail { display: none; }
 .chat__next { margin-left: auto; }
 .chat__done { display: grid; gap: 1.25rem; }
 .chat__done:focus { outline: none; }
+.chat__review { display: grid; gap: 1.25rem; }
+.chat__thanks { margin: 0; font-family: var(--font-hand); font-weight: 400; font-size: clamp(2.4rem, 1.4rem + 3.6vw, 4.2rem); line-height: 1.05; color: var(--color-beige); }
+.chat__thanks:focus { outline: none; }
 .chat__summary { margin: 0; padding: 1.1rem 1.2rem; background: var(--color-smoke); color: var(--color-charcoal); border-radius: var(--r-sm); font-family: var(--font); font-size: .98rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
 .chat__send { display: flex; flex-wrap: wrap; gap: .75rem; }
 .chat__noscript { font-weight: 800; }

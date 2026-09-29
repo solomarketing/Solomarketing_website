@@ -497,14 +497,16 @@
           </fieldset>
 
           <div class="chat__done" data-chat-done hidden tabindex="-1">
-            <p class="chat__q">That’s everything<span data-echo-name-2></span>. Here’s what we’ll receive:</p>
-            <pre class="chat__summary" data-chat-summary></pre>
-            <div class="chat__send">
-              <a class="btn btn--primary" data-chat-mail hidden href="#"><span>Send it <span class="btn__arrow" aria-hidden="true">→</span></span></a>
-              <button class="btn btn--ghost" type="button" data-chat-copy><span>Copy message</span></button>
+            <div class="chat__review" data-chat-review>
+              <p class="chat__q">That’s everything<span data-echo-name-2></span>. Here’s what we’ll receive:</p>
+              <pre class="chat__summary" data-chat-summary></pre>
+              <div class="chat__send">
+                <button class="btn btn--primary" type="button" data-chat-send><span>Send it <span class="btn__arrow" aria-hidden="true">→</span></span></button>
+              </div>
+              <p class="field__error" data-chat-error hidden>That didn’t go through. Please try again, or email us at <a href="mailto:solomarketing.ut@gmail.com">solomarketing.ut@gmail.com</a>.</p>
+              <p class="chat__after">We’ll get back to you soon. Promise it’s a person.</p>
             </div>
-            <p class="todo" data-chat-missing data-todo="Owner" hidden>Add the SOLO contact email in <code>assets/js/site.js</code> (CONFIG.email) to switch on the send button, or connect a form or booking tool.</p>
-            <p class="chat__after">We’ll get back to you soon. Promise it’s a person.</p>
+            <p class="chat__thanks" data-chat-thanks hidden tabindex="-1">Thank you, we’ll be in touch.</p>
           </div>
 
           <div class="chat__nav" data-chat-nav>

@@ -608,9 +608,10 @@ const CONFIG = {
     const done = $('[data-chat-done]', form);
     const status = $('[data-chat-status]', form);
     const summaryEl = $('[data-chat-summary]', form);
-    const mail = $('[data-chat-mail]', form);
-    const missing = $('[data-chat-missing]', form);
-    const copy = $('[data-chat-copy]', form);
+    const sendBtn = $('[data-chat-send]', form);
+    const review = $('[data-chat-review]', form);
+    const thanks = $('[data-chat-thanks]', form);
+    const errEl = $('[data-chat-error]', form);
     let at = 0;
     form.classList.add('is-stepped');
 
@@ -694,34 +695,26 @@ const CONFIG = {
       });
       if (!res.ok) throw new Error(`HubSpot responded ${res.status}`);
     };
-    let sending = false, sent = false;
-    const sendLabel = mail.innerHTML;
-    const errEl = document.createElement('p');
-    errEl.className = 'field__error';
-    errEl.hidden = true;
-    errEl.textContent = 'That didn’t go through. Please use the email button instead, or copy the message.';
-    $('.chat__send', form).after(errEl);
-    mail.addEventListener('click', async e => {
-      if (!CONFIG.hubspot) return;            // no HubSpot: plain mailto link
-      if (sent || sending) { e.preventDefault(); return; }
-      if (mail.dataset.fallback === 'true') return; // HubSpot failed once: let mailto open
-      e.preventDefault();
+    let sending = false;
+    const sendLabel = sendBtn.innerHTML;
+    sendBtn.addEventListener('click', async () => {
+      if (sending) return;
       sending = true;
-      mail.setAttribute('aria-disabled', 'true');
-      mail.firstElementChild.textContent = 'Sending...';
+      errEl.hidden = true;
+      sendBtn.setAttribute('aria-disabled', 'true');
+      sendBtn.firstElementChild.textContent = 'Sending...';
       try {
         await sendToHubspot();
-        sent = true;
-        mail.firstElementChild.textContent = 'Sent. Thank you.';
-        status.textContent = 'Message sent. We’ll be in touch soon.';
-        copy.hidden = true;
+        review.hidden = true;
+        back.hidden = true;
+        thanks.hidden = false;
+        status.textContent = 'Message sent. Thank you, we’ll be in touch.';
+        thanks.focus({ preventScroll: true });
       } catch (err) {
-        mail.dataset.fallback = 'true';
         errEl.hidden = false;
-        mail.removeAttribute('aria-disabled');
-        mail.innerHTML = sendLabel;
-        mail.firstElementChild.firstChild.textContent = 'Send by email instead ';
-        status.textContent = 'That didn’t go through. Use the email button instead, or copy the message.';
+        sendBtn.removeAttribute('aria-disabled');
+        sendBtn.innerHTML = sendLabel;
+        status.textContent = 'That didn’t go through. Please try again.';
       } finally {
         sending = false;
       }
@@ -729,8 +722,8 @@ const CONFIG = {
 
     const finish = () => {
       const text = compose();
-      sent = false; delete mail.dataset.fallback; errEl.hidden = true; copy.hidden = false;
-      mail.removeAttribute('aria-disabled'); mail.innerHTML = sendLabel;
+      errEl.hidden = true; review.hidden = false; thanks.hidden = true;
+      sendBtn.removeAttribute('aria-disabled'); sendBtn.innerHTML = sendLabel;
       summaryEl.textContent = text;
       stepsEl.forEach(s => s.classList.remove('is-current'));
       dots.forEach(d => d.classList.add('is-on'));
@@ -740,12 +733,6 @@ const CONFIG = {
       back.lastChild.textContent = ' Edit answers';
       const n = firstName();
       $('[data-echo-name-2]', form).textContent = n ? `, ${n}` : '';
-      if (CONFIG.email) {
-        mail.hidden = false; missing.hidden = true;
-        mail.href = `mailto:${CONFIG.email}?subject=${encodeURIComponent(CONFIG.subject)}&body=${encodeURIComponent(text)}`;
-      } else {
-        mail.hidden = true; missing.hidden = false;
-      }
       done.hidden = false;
       at = stepsEl.length;
       status.textContent = 'All four questions answered. Review your message below.';
@@ -773,12 +760,6 @@ const CONFIG = {
     form.addEventListener('input', e => {
       const n = e.target.name;
       if (e.target.getAttribute('aria-invalid') === 'true') validate(['name', 'business', '', 'email'].indexOf(n));
-    });
-    copy.addEventListener('click', async () => {
-      const label = copy.textContent;
-      try { await navigator.clipboard.writeText(summaryEl.textContent); copy.textContent = 'Copied. Thank you.'; }
-      catch { copy.textContent = 'Select the text above to copy'; }
-      setTimeout(() => copy.textContent = label, 2400);
     });
     show(0);
   }
